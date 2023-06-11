@@ -14,8 +14,10 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'Flutter Demo',
-        theme:
-            ThemeData(scaffoldBackgroundColor: kScaffoldBackgroundColor, appBarTheme: AppBarTheme(color: kAppBarColor)),
+        theme: ThemeData(
+          scaffoldBackgroundColor: kScaffoldBackgroundColor,
+          appBarTheme: AppBarTheme(color: kCardColor),
+        ),
         home: const ChatScreen());
   }
 }
