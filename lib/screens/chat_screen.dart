@@ -1,9 +1,10 @@
 import 'package:chat_gpt/constants/constants.dart';
 import 'package:chat_gpt/services/assets_manager.dart';
 import 'package:chat_gpt/widgets/chat_widget.dart';
-import 'package:chat_gpt/widgets/text_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+
+import '../services/services.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -39,26 +40,7 @@ class _ChatScreenState extends State<ChatScreen> {
         title: const Text("ChatGPT"),
         actions: [
           IconButton(
-            onPressed: () async {
-              await showModalBottomSheet(
-                backgroundColor: kScaffoldBackgroundColor,
-                shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-                context: context,
-                builder: (context) {
-                  return Padding(
-                    padding: const EdgeInsets.all(18.0),
-                    child: Row(
-                      children: const [
-                        TextWidget(
-                          label: "Choosen Model:",
-                          fontSize: 16,
-                        )
-                      ],
-                    ),
-                  );
-                },
-              );
-            },
+            onPressed: () async => await Services.showBottomSheet(context: context),
             icon: const Icon(
               Icons.more_vert_rounded,
               color: Colors.white,
