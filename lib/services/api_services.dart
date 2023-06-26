@@ -4,21 +4,29 @@ import 'dart:io';
 import 'package:chat_gpt/constants/api_constants.dart';
 import 'package:http/http.dart' as http;
 
+import '../models/models_model.dart';
+
 class ApiService {
-  static Future<void> getModels() async {
+  static Future<List<ModelsModel>> getModels() async {
     try {
-      Uri uri = Uri.parse("$kBaseUrl/models");
-      var response = await http.get(uri, headers: {"Authorization": "Bearer $kApiKey"});
-      Map jsonResponse = json.decode(response.body);
+      var response = await http.get(
+        Uri.parse("$kBaseUrl/models"),
+        headers: {'Authorization': 'Bearer $kApiKey'},
+      );
+
+      Map jsonResponse = jsonDecode(response.body);
 
       if (jsonResponse['error'] != null) {
-        print("jsonResponse['error']: ${jsonResponse['error']['message']}");
-        throw HttpException(jsonResponse['error']['message']);
+        throw HttpException(jsonResponse['error']["message"]);
       }
-
-      print(jsonResponse);
-    } catch (e) {
-      print("error: $e");
+      List temp = [];
+      for (var value in jsonResponse["data"]) {
+        temp.add(value);
+      }
+      return ModelsModel.modelsFromSnapshot(temp);
+    } catch (error) {
+      print("error $error");
+      rethrow;
     }
   }
 }
