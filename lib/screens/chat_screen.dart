@@ -21,11 +21,13 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   bool _isTyping = false;
+  late ScrollController _listController;
   late TextEditingController textEditingController;
   late FocusNode focusNode;
 
   @override
   void initState() {
+    _listController = ScrollController();
     textEditingController = TextEditingController();
     focusNode = FocusNode();
     super.initState();
@@ -33,6 +35,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   void dispose() {
+    _listController.dispose();
     textEditingController.dispose();
     focusNode.dispose();
     super.dispose();
@@ -64,6 +67,8 @@ class _ChatScreenState extends State<ChatScreen> {
           children: [
             Flexible(
               child: ListView.builder(
+                physics: ScrollPhysics(),
+                controller: _listController,
                 itemCount: chatList.length,
                 itemBuilder: (context, index) {
                   return ChatWidget(
@@ -118,13 +123,19 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
+  void scrollListToEND() {
+    _listController.animateTo(
+      _listController.position.maxScrollExtent,
+      duration: const Duration(seconds: 2),
+      curve: Curves.easeOut,
+    );
+  }
+
   Future<void> sendMessageFCT({required ModelsProvider modelsProvider}) async {
     try {
+      chatList.add(ChatModel(msg: textEditingController.text, chatIndex: 0));
       setState(() {
         _isTyping = true;
-        chatList.add(ChatModel(msg: textEditingController.text, chatIndex: 0));
-        textEditingController.clear();
-        focusNode.unfocus();
       });
       log("Request has been sent");
       chatList.addAll(await ApiService.sendMessage(
@@ -135,7 +146,10 @@ class _ChatScreenState extends State<ChatScreen> {
     } catch (e) {
       print("error $e");
     } finally {
+      scrollListToEND();
       setState(() {
+        textEditingController.clear();
+        focusNode.unfocus();
         _isTyping = false;
       });
     }
