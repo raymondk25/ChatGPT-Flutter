@@ -45,7 +45,7 @@ class ApiService {
             "messages": [
               {"role": "user", "content": message}
             ],
-            "max_tokens": 50
+            "max_tokens": 100
           }));
 
       Map jsonResponse = jsonDecode(response.body);

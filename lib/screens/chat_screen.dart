@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:chat_gpt/constants/constants.dart';
+import 'package:chat_gpt/models/chat_model.dart';
 import 'package:chat_gpt/services/api_services.dart';
 import 'package:chat_gpt/services/assets_manager.dart';
 import 'package:chat_gpt/widgets/chat_widget.dart';
@@ -21,19 +22,23 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   bool _isTyping = false;
   late TextEditingController textEditingController;
+  late FocusNode focusNode;
 
   @override
   void initState() {
     textEditingController = TextEditingController();
+    focusNode = FocusNode();
     super.initState();
   }
 
   @override
   void dispose() {
     textEditingController.dispose();
+    focusNode.dispose();
     super.dispose();
   }
 
+  List<ChatModel> chatList = [];
   @override
   Widget build(BuildContext context) {
     final modelsProvider = Provider.of<ModelsProvider>(context);
@@ -59,11 +64,11 @@ class _ChatScreenState extends State<ChatScreen> {
           children: [
             Flexible(
               child: ListView.builder(
-                itemCount: 6,
+                itemCount: chatList.length,
                 itemBuilder: (context, index) {
                   return ChatWidget(
-                    msg: chatMessages[index]['msg'].toString(),
-                    chatIndex: int.parse(chatMessages[index]['chatIndex'].toString()),
+                    msg: chatList[index].msg,
+                    chatIndex: chatList[index].chatIndex,
                   );
                 },
               ),
@@ -83,9 +88,12 @@ class _ChatScreenState extends State<ChatScreen> {
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: TextField(
+                        focusNode: focusNode,
                         style: const TextStyle(color: Colors.white),
                         controller: textEditingController,
-                        onSubmitted: (value) async {},
+                        onSubmitted: (value) async {
+                          sendMessageFCT(modelsProvider: modelsProvider);
+                        },
                         decoration: const InputDecoration(
                           hintText: 'How can I help you',
                           hintStyle: TextStyle(color: Colors.grey),
@@ -95,22 +103,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   ),
                   IconButton(
                       onPressed: () async {
-                        setState(() {
-                          _isTyping = true;
-                        });
-                        log("Request has been sent");
-                        try {
-                          final msg = await ApiService.sendMessage(
-                            message: textEditingController.text,
-                            modelId: modelsProvider.getCurrentModel,
-                          );
-                        } catch (e) {
-                          print("error $e");
-                        } finally {
-                          setState(() {
-                            _isTyping = false;
-                          });
-                        }
+                        await sendMessageFCT(modelsProvider: modelsProvider);
                       },
                       icon: Icon(
                         Icons.send,
@@ -123,5 +116,28 @@ class _ChatScreenState extends State<ChatScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> sendMessageFCT({required ModelsProvider modelsProvider}) async {
+    try {
+      setState(() {
+        _isTyping = true;
+        chatList.add(ChatModel(msg: textEditingController.text, chatIndex: 0));
+        textEditingController.clear();
+        focusNode.unfocus();
+      });
+      log("Request has been sent");
+      chatList.addAll(await ApiService.sendMessage(
+        message: textEditingController.text,
+        modelId: modelsProvider.getCurrentModel,
+      ));
+      setState(() {});
+    } catch (e) {
+      print("error $e");
+    } finally {
+      setState(() {
+        _isTyping = false;
+      });
+    }
   }
 }
