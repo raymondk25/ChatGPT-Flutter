@@ -1,11 +1,10 @@
 import 'dart:developer';
 
 import 'package:chat_gpt/constants/constants.dart';
-import 'package:chat_gpt/models/chat_model.dart';
 import 'package:chat_gpt/providers/chats_provider.dart';
-import 'package:chat_gpt/services/api_services.dart';
 import 'package:chat_gpt/services/assets_manager.dart';
 import 'package:chat_gpt/widgets/chat_widget.dart';
+import 'package:chat_gpt/widgets/text_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:provider/provider.dart';
@@ -133,6 +132,17 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Future<void> sendMessageFCT({required ModelsProvider modelsProvider, required ChatProvider chatProvider}) async {
+    if (textEditingController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: TextWidget(
+            label: "Please type a message",
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
     try {
       chatProvider.getUserMessage(msg: textEditingController.text);
       setState(() {
@@ -146,6 +156,14 @@ class _ChatScreenState extends State<ChatScreen> {
       setState(() {});
     } catch (e) {
       print("error $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: TextWidget(
+            label: e.toString(),
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
     } finally {
       scrollListToEND();
       setState(() {
