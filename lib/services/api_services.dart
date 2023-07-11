@@ -36,6 +36,44 @@ class ApiService {
   static Future<List<ChatModel>> sendMessage({required String message, required String modelId}) async {
     try {
       log("modelId: $modelId");
+      var response = await http.post(Uri.parse("$kBaseUrl/completions"),
+          headers: {
+            'Authorization': 'Bearer $kApiKey',
+            'Content-Type': 'application/json',
+          },
+          body: jsonEncode({
+            "model": modelId,
+            "prompt": message,
+            "max_tokens": 100,
+          }));
+
+      Map jsonResponse = jsonDecode(response.body);
+
+      if (jsonResponse['error'] != null) {
+        throw HttpException(jsonResponse['error']["message"]);
+      }
+      List<ChatModel> chatList = [];
+      if (jsonResponse['choices'].length > 0) {
+        // log("jsonResponse message: ${jsonResponse['choices'][0]['text']}");
+        chatList = List.generate(
+          jsonResponse['choices'].length,
+          (index) => ChatModel(
+            msg: jsonResponse['choices'][index]['text'],
+            chatIndex: 1,
+          ),
+        );
+      }
+      return chatList;
+    } catch (error) {
+      print("error $error");
+      rethrow;
+    }
+  }
+
+  // Send Message using ChatGPT API
+  static Future<List<ChatModel>> sendMessageGPT({required String message, required String modelId}) async {
+    try {
+      log("modelId: $modelId");
       var response = await http.post(Uri.parse("$kBaseUrl/chat/completions"),
           headers: {
             'Authorization': 'Bearer $kApiKey',
