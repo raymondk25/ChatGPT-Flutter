@@ -63,61 +63,64 @@ class _ChatScreenState extends State<ChatScreen> {
         ],
       ),
       body: SafeArea(
-        child: Column(
-          children: [
-            Flexible(
-              child: ListView.builder(
-                physics: ScrollPhysics(),
-                controller: _listController,
-                itemCount: chatProvider.getChatList.length,
-                itemBuilder: (context, index) {
-                  return ChatWidget(
-                    msg: chatProvider.getChatList[index].msg,
-                    chatIndex: chatProvider.getChatList[index].chatIndex,
-                  );
-                },
+        child: GestureDetector(
+          onTap: () => FocusScope.of(context).unfocus(),
+          child: Column(
+            children: [
+              Flexible(
+                child: ListView.builder(
+                  physics: ScrollPhysics(),
+                  controller: _listController,
+                  itemCount: chatProvider.getChatList.length,
+                  itemBuilder: (context, index) {
+                    return ChatWidget(
+                      msg: chatProvider.getChatList[index].msg,
+                      chatIndex: chatProvider.getChatList[index].chatIndex,
+                    );
+                  },
+                ),
               ),
-            ),
-            if (_isTyping) ...[
-              const SpinKitThreeBounce(
-                size: 18,
-                color: Colors.white,
-              ),
-            ],
-            const SizedBox(height: 15),
-            Material(
-              color: kCardColor,
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: TextField(
-                        focusNode: focusNode,
-                        style: const TextStyle(color: Colors.white),
-                        controller: textEditingController,
-                        onSubmitted: (value) async {
-                          sendMessageFCT(modelsProvider: modelsProvider, chatProvider: chatProvider);
-                        },
-                        decoration: const InputDecoration(
-                          hintText: 'How can I help you',
-                          hintStyle: TextStyle(color: Colors.grey),
+              if (_isTyping) ...[
+                const SpinKitThreeBounce(
+                  size: 18,
+                  color: Colors.white,
+                ),
+              ],
+              const SizedBox(height: 15),
+              Material(
+                color: kCardColor,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: TextField(
+                          focusNode: focusNode,
+                          style: const TextStyle(color: Colors.white),
+                          controller: textEditingController,
+                          onSubmitted: (value) async {
+                            sendMessageFCT(modelsProvider: modelsProvider, chatProvider: chatProvider);
+                          },
+                          decoration: const InputDecoration(
+                            hintText: 'How can I help you',
+                            hintStyle: TextStyle(color: Colors.grey),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  IconButton(
-                      onPressed: () async {
-                        await sendMessageFCT(modelsProvider: modelsProvider, chatProvider: chatProvider);
-                      },
-                      icon: Icon(
-                        Icons.send,
-                        color: Colors.white,
-                      ))
-                ],
+                    IconButton(
+                        onPressed: () async {
+                          await sendMessageFCT(modelsProvider: modelsProvider, chatProvider: chatProvider);
+                        },
+                        icon: Icon(
+                          Icons.send,
+                          color: Colors.white,
+                        ))
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
